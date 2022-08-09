@@ -1,13 +1,12 @@
 CC := clang
 CFLAGS := -std=c17 -MP -MD -g -Wextra -pedantic
 LFLAGS :=
-IFLAGS :=
+IFLAGS := -Isrc
 SRC := $(foreach dir,src,$(wildcard $(dir)/*.c) $(wildcard $(dir)/**/*.c) $(wildcard $(dir)/**/**/*.c))
 OBJ := $(addprefix obj/,$(notdir $(SRC:%.c=%.o)))
 VPATH := $(dir $(SRC))
 DEP := $(OBJ:%.o=%.d)
 -include $(DEP)
-
 .DEFAULT_GOAL := build
 build: $(OBJ)
 	@mkdir -p $(dir bin/buildchain)

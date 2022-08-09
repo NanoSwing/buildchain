@@ -288,6 +288,9 @@ void write_makefile(BuildConfig config, const char *filepath)
 	fprintf(fp, "\n");
 	// IFLAGS
 	fprintf(fp, "IFLAGS :=");
+	for (int i = 0; i < config.src_dirs.count; i++) {
+		fprintf(fp, " -I%s", config.src_dirs.arr[i]);
+	}
 	for (int i = 0; i < config.include_dirs.count; i++) {
 		fprintf(fp, " -I%s", config.include_dirs.arr[i]);
 	}
@@ -319,10 +322,6 @@ void write_makefile(BuildConfig config, const char *filepath)
 	fprintf(fp, "DEP := $(OBJ:%%.o=%%.d)\n");
 	fprintf(fp, "-include $(DEP)\n");
 
-	fprintf(fp, "\n");
-
-	fprintf(fp, "");
-
 	fprintf(fp, ".DEFAULT_GOAL := build\n");
 	// Output
 	fprintf(fp, "build: $(OBJ)\n");
@@ -349,6 +348,29 @@ void write_makefile(BuildConfig config, const char *filepath)
 	fclose(fp);
 }
 
+void generate_default_config(const char *filepath)
+{
+	FILE *fp = fopen(filepath, "wb");
+	if (fp == NULL) {
+		printf("Error: Can't open/create file '%s'.\n", filepath);
+		exit(1);
+	}
+
+	fprintf(fp, "compiler     = gcc;\n");
+	fprintf(fp, "standard     = c17;\n");
+	fprintf(fp, "type         = bin;\n");
+	fprintf(fp, "mode         = debug;\n");
+	fprintf(fp, "output       = bin/application;\n");
+	fprintf(fp, "search_depth = 3;\n");
+	fprintf(fp, "libs         = ;\n");
+	fprintf(fp, "src_dirs     = src;\n");
+	fprintf(fp, "obj_dir      = obj;\n");
+	fprintf(fp, "include_dirs = ;\n");
+	fprintf(fp, "lib_dirs     = ;\n");
+
+	fclose(fp);
+}
+
 int main(int argc, char *argv[])
 {
 	char *user_input = NULL;
@@ -360,6 +382,14 @@ int main(int argc, char *argv[])
 			}
 			if (argv[i][1] == 'o') {
 				user_output = strdup(argv[i + 1]);
+			}
+			if (argv[i][1] == 'g') {
+				if (argv[i+1] != NULL) {
+					generate_default_config(argv[i + 1]);
+					return 0;
+				}
+				generate_default_config(".buildchain");
+				return 0;
 			}
 		}
 	}
