@@ -1,8 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/nanoswing/coding/c/buildchain'
-mkdir -p obj
-clang -std=c17 -MP -MD -g -Wextra -pedantic -c src/main.c -o obj/main.o 
-mkdir -p bin/
-clang -std=c17 -MP -MD -g -Wextra -pedantic obj/main.o -o bin/buildchain 
-make: Leaving directory '/home/nanoswing/coding/c/buildchain'
- 
