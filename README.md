@@ -2,9 +2,9 @@
 Buildchain is a tool for generating a makefile from parameters in a config file.
 
 ## Usage
-The default input file is named `.buildchain` but can be changed with the `-i` flag.
-
-The default output file is named `Makefile` but can be changed with the `-o` flag.
+- -g - Generate a .buildconfig template. Pass a name after to change output file from `.buildconfig`.
+- -o - Change the output file from the default `Makefile`.
+- -i - Change the input config file from the default `.buildconfig`.
 
 Example of `.buildchain` file
 ```text
@@ -21,13 +21,7 @@ obj_dir      = obj;
 include_dirs = include;
 ```
 
-## Documentation
-### Command line arguments
-- -g - Generate a .buildconfig template. Pass a name after to change output file from `.buildconfig`.
-- -o - Change the output file from the default `Makefile`.
-- -i - Change the input config file from the default `.buildconfig`.
-
-### Config file
+## Config file
 - compiler     - What compiler is used.
 - standard/std - C standard.
 - type         - Type of output. Either **bin** for a binary or **lib** for a library.
