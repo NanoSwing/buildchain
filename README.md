@@ -8,17 +8,17 @@ The default output file is named `Makefile` but can be changed with the `-o` fla
 
 Example of `.buildchain` file
 ```text
-compiler		  = clang;
-standard		  = c17;
-type			    = bin;
-mode			    = debug;
-output			  = bin/foo;
-search_depth	= 1;
-libs			    = somecoollib;
-lib_dirs		  = /path/to/library/location;
-src_dirs		  = src;
-obj_dir			  = obj;
-include_dirs	= include;
+compiler     = clang;
+standard     = c17;
+type         = bin;
+mode         = debug;
+output       = bin/foo;
+search_depth = 1;
+libs         = somecoollib;
+lib_dirs     = /path/to/library/location;
+src_dirs     = src;
+obj_dir      = obj;
+include_dirs = include;
 ```
 
 ## Documentation
