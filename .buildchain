@@ -1,0 +1,11 @@
+compiler		= clang;
+standard		= c17;
+type			= bin;
+mode			= debug;
+output			= bin/buildchain;
+search_depth    = 3;
+libs			= ;
+src_dirs		= src;
+obj_dir			= obj;
+include_dirs	= ;
+lib_dirs		= ;
