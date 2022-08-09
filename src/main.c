@@ -76,6 +76,10 @@ BuildConfig build_config_create(const char *filepath)
 
 	// Clean up the file
 	FILE *fp = fopen(filepath, "rb");
+	if (fp == NULL) {
+		printf("Error: Unable to open '%s'. Try passing -g to generate a default config file.\n", filepath);
+		exit(1);
+	}
 	char stripped[512];
 	int i = 0;
 	char c;
