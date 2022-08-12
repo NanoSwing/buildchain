@@ -358,7 +358,7 @@ void write_makefile(BuildConfig config, const char *filepath)
 	if (config.type == BUILD_TYPE_BINARY) {
 		fprintf(fp, "\t$(CC) $(CFLAGS) $(IFLAGS) $< -o %s/$@ $(LFLAGS)\n", config.tests_dir);
 	} else if (config.type == BUILD_TYPE_LIBRARY) {
-		fprintf(fp, "\t$(CC) $(CFLAGS) $(IFLAGS) -L$(dir %s) -l$(notdir %s) $< -o %s/$@ $(LFLAGS)\n", config.output, config.output, config.tests_dir);
+		fprintf(fp, "\t$(CC) $(CFLAGS) $(IFLAGS) $< -o %s/$@ -L$(dir %s) -l$(notdir %s) $(LFLAGS)\n", config.tests_dir, config.output, config.output);
 	}
 
 	fclose(fp);
