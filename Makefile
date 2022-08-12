@@ -14,6 +14,8 @@ build: $(OBJ)
 obj/%.o: %.c
 	@mkdir -p obj
 	$(CC) $(CFLAGS) -c $< -o $@ $(IFLAGS)
-.PHONY: clean
+.PHONY: clean test_%
 clean:
-	rm -f $(OBJ) $(DEP) bin/buildchain
+	rm -f $(OBJ) $(DEP) $(wildcard tests/test_*) bin/buildchain
+test_%: tests/%.c build
+	$(CC) $(CFLAGS) $(IFLAGS) $< -o tests/$@ $(LFLAGS)

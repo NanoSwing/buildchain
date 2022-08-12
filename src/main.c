@@ -59,6 +59,7 @@ typedef struct {
 	StringArray lib_dirs;
 	StringArray include_dirs;
 	char *obj_dir;
+	char *tests_dir;
 
 	StringArray libs;
 } BuildConfig;
@@ -103,6 +104,7 @@ BuildConfig build_config_create(const char *filepath)
 		PARAM_OBJ_DIR,
 		PARAM_INCLUDE_DIRS,
 		PARAM_LIB_DIRS,
+		PARAM_TESTS_DIR,
 	} Parameter;
 	Parameter curr_param;
 	int buff_i = 0;
@@ -138,6 +140,8 @@ BuildConfig build_config_create(const char *filepath)
 					curr_param = PARAM_INCLUDE_DIRS;
 				} else if (strcmp(buffer, "lib_dirs") == 0) {
 					curr_param = PARAM_LIB_DIRS;
+				} else if (strcmp(buffer, "tests_dir") == 0) {
+					curr_param = PARAM_TESTS_DIR;
 				} else {
 					printf("Error: '%s' is not a valid parameter.\n", buffer);
 					exit(1);
@@ -203,6 +207,10 @@ BuildConfig build_config_create(const char *filepath)
 						if (buffer[0] == '\0') { break; }
 						string_array_push(&config.lib_dirs, buffer);
 						break;
+					case PARAM_TESTS_DIR:
+						if (buffer[0] == '\0') { break; }
+						config.tests_dir = strdup(buffer);
+						break;
 				}
 				break;
 			case ',':
@@ -220,6 +228,7 @@ BuildConfig build_config_create(const char *filepath)
 					"obj_dir",
 					"include_dirs",
 					"lib_dirs",
+					"tests_dir",
 				};
 				switch (curr_param) {
 					case PARAM_LIBS:
@@ -269,9 +278,6 @@ void write_makefile(BuildConfig config, const char *filepath)
 		printf("Error: Unable to create/write to file '%s'.\n", filepath);
 		exit(1);
 	}
-
-	// Generate file contents
-	char content[1024] = {0};
 
 	fprintf(fp, "CC := %s\n", config.compiler);
 	// CFLAGS
@@ -341,12 +347,18 @@ void write_makefile(BuildConfig config, const char *filepath)
 	fprintf(fp, "\t$(CC) $(CFLAGS) -c $< -o $@ $(IFLAGS)\n");
 
 	// Phony
-	fprintf(fp, ".PHONY: clean\n");
+	fprintf(fp, ".PHONY: clean test_%%\n");
 	fprintf(fp, "clean:\n");
 	if (config.type == BUILD_TYPE_BINARY) {
-		fprintf(fp, "\trm -f $(OBJ) $(DEP) %s\n", config.output);
+		fprintf(fp, "\trm -f $(OBJ) $(DEP) $(wildcard %s/test_*) %s\n", config.tests_dir, config.output);
 	} else if ( config.type == BUILD_TYPE_LIBRARY) {
-		fprintf(fp, "\trm -f $(OBJ) $(DEP) $(dir %s)lib$(notdir %s).a\n", config.output, config.output);
+		fprintf(fp, "\trm -f $(OBJ) $(DEP) $(wildcard %s/test_*) $(dir %s)lib$(notdir %s).a\n", config.tests_dir, config.output, config.output);
+	}
+	fprintf(fp, "test_%%: %s/%%.c build\n", config.tests_dir);
+	if (config.type == BUILD_TYPE_BINARY) {
+		fprintf(fp, "\t$(CC) $(CFLAGS) $(IFLAGS) $< -o %s/$@ $(LFLAGS)\n", config.tests_dir);
+	} else if (config.type == BUILD_TYPE_LIBRARY) {
+		fprintf(fp, "\t$(CC) $(CFLAGS) $(IFLAGS) -L$(dir %s) -l$(notdir %s) $< -o %s/$@ $(LFLAGS)\n", config.output, config.output, config.tests_dir);
 	}
 
 	fclose(fp);
@@ -371,6 +383,31 @@ void generate_default_config(const char *filepath)
 	fprintf(fp, "obj_dir      = obj;\n");
 	fprintf(fp, "include_dirs = ;\n");
 	fprintf(fp, "lib_dirs     = ;\n");
+	fprintf(fp, "tests_dir    = tests;\n");
+
+	fclose(fp);
+}
+
+void write_compile_flags(BuildConfig config)
+{
+	FILE *fp = fopen("compile_flags.txt", "wb");
+	if (fp == NULL) {
+		printf("Error: Couldn't open or create 'compile_flags.txt'.\n");
+		exit(1);
+	}
+
+	fprintf(fp, "-std=%s\n", config.standard);
+	fprintf(fp, "-Wall\n");
+	fprintf(fp, "-Wextra\n");
+	fprintf(fp, "-pedantic\n");
+
+	for (int i = 0; i < config.src_dirs.count; i++) {
+		fprintf(fp, "-I%s\n", config.src_dirs.arr[i]);
+	}
+
+	for (int i = 0; i < config.include_dirs.count; i++) {
+		fprintf(fp, "-I%s\n", config.include_dirs.arr[i]);
+	}
 
 	fclose(fp);
 }
@@ -413,6 +450,7 @@ int main(int argc, char *argv[])
 	} else {
 		write_makefile(config, user_output);
 	}
+	write_compile_flags(config);
 
 	build_config_destroy(&config);
 	return 0;

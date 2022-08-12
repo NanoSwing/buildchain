@@ -19,6 +19,7 @@ lib_dirs     = /path/to/library/location;
 src_dirs     = src;
 obj_dir      = obj;
 include_dirs = include;
+tests_dir    = tests;
 ```
 
 ## Config file
@@ -33,6 +34,7 @@ include_dirs = include;
 - src_dirs     - A list of directories containing source files (.c). They will be recursivly searched through with a depth of search_depth.
 - obj_dir      - Directory where all .o and .d files get placed.
 - include_dirs - A list of directories containing header files.
+- tests_dir    - Directory where the command 'make test_abc' will compile tests_dir/abc.c into tests_dir/test_abc(.exe)
 
 ## Building
 ```bash

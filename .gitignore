@@ -1,3 +1,4 @@
 bin/
 .buildchain
 obj/
+compile_flags.txt
