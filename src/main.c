@@ -273,6 +273,8 @@ void build_config_destroy(BuildConfig *config)
 
 void write_makefile(BuildConfig config, const char *filepath)
 {
+	const char *DEBUG_FLAGS = "-g -Wall -Wextra -pedantic";
+
 	FILE *fp = fopen(filepath, "wb");
 	if (fp == NULL) {
 		printf("Error: Unable to create/write to file '%s'.\n", filepath);
@@ -283,7 +285,7 @@ void write_makefile(BuildConfig config, const char *filepath)
 	// CFLAGS
 	fprintf(fp, "CFLAGS := -std=%s -MP -MD", config.standard);
 	if (config.mode == BUILD_MODE_DEBUG) {
-		fprintf(fp, " -g -Wextra -pedantic\n");
+		fprintf(fp, " %s\n", DEBUG_FLAGS);
 	} else if (config.mode == BUILD_MODE_RELEASE) {
 		fprintf(fp, " -O3\n");
 	}
@@ -356,10 +358,15 @@ void write_makefile(BuildConfig config, const char *filepath)
 	}
 	fprintf(fp, "test_%%: %s/%%.c build\n", config.tests_dir);
 	if (config.type == BUILD_TYPE_BINARY) {
-		fprintf(fp, "\t$(CC) $(CFLAGS) $(IFLAGS) $< -o %s/$@ $(LFLAGS)\n", config.tests_dir);
+		fprintf(fp, "\t$(CC) %s $(IFLAGS) $< -o %s/$@ $(LFLAGS)\n", DEBUG_FLAGS, config.tests_dir);
 	} else if (config.type == BUILD_TYPE_LIBRARY) {
-		fprintf(fp, "\t$(CC) $(CFLAGS) $(IFLAGS) $< -o %s/$@ -L$(dir %s) -l$(notdir %s) $(LFLAGS)\n", config.tests_dir, config.output, config.output);
+		fprintf(fp, "\t$(CC) %s $(IFLAGS) $< -o %s/$@ -L$(dir %s) -l$(notdir %s) $(LFLAGS)\n", DEBUG_FLAGS, config.tests_dir, config.output, config.output);
 	}
+
+	fprintf(fp, "TESTS := $(addprefix test_,$(basename $(notdir $(wildcard tests/*.c))))\n");
+	fprintf(fp, "test_all: $(TESTS)\n");
+	// Add 'cd .' at the end to escape the last &&
+	fprintf(fp, "\t$(foreach test,$(TESTS),./tests/$(test) && echo \"\" &&) cd .\n");
 
 	fclose(fp);
 }
@@ -412,25 +419,44 @@ void write_compile_flags(BuildConfig config)
 	fclose(fp);
 }
 
+void print_usage(void)
+{
+	printf("Usage: buildchain [OPTIONS]\n");
+	printf("\tIf no options are specified it will try to read '.buildchain' and output to 'Makefile'.\n");
+	printf("\n");
+	printf("\t-h file\n\t\tPrints program usage.\n");
+	printf("\t-g file\n\t\tGenerates a config file. If file is not specified it will default to .buildchain.\n");
+	printf("\t-o file\n\t\tSpcify an onput file. If file is not specified it will default to 'Makefile'.\n");
+	printf("\t-i file\n\t\tSpcify an input file. If file is not specified it will default to '.buildchain'.\n");
+}
+
 int main(int argc, char *argv[])
 {
 	char *user_input = NULL;
 	char *user_output = NULL;
 	for (int i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
-			if (argv[i][1] == 'i') {
+			if (argv[i][1] == 'h') {
+				print_usage();
+				return 0;
+			}
+			else if (argv[i][1] == 'i') {
 				user_input = strdup(argv[i + 1]);
 			}
-			if (argv[i][1] == 'o') {
+			else if (argv[i][1] == 'o') {
 				user_output = strdup(argv[i + 1]);
 			}
-			if (argv[i][1] == 'g') {
+			else if (argv[i][1] == 'g') {
 				if (argv[i+1] != NULL) {
 					generate_default_config(argv[i + 1]);
 					return 0;
 				}
 				generate_default_config(".buildchain");
 				return 0;
+			}
+			else {
+				printf("'-%c' is not a recognized option.\n", argv[i][1]);
+				print_usage();
 			}
 		}
 	}

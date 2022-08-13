@@ -1,10 +1,19 @@
 # Buildchain
 Buildchain is a tool for generating a makefile from parameters in a config file.
 
+Makefile functions:
+- build (default) - Compiles all .c files into .o files and compiles them into either a binary or a library.
+- clean           - Deletes all .o, .d, tests, and the generated binary or library.
+- test_*          - Replace * with a .c name in tests_dir to generate test binary.
+- test_all        - Compiles all tests and runs them.
+
 ## Usage
-- -g - Generate a .buildconfig template. Pass a name after to change output file from `.buildconfig`.
-- -o - Change the output file from the default `Makefile`.
-- -i - Change the input config file from the default `.buildconfig`.
+If no options are specified it will try to read '.buildchain' and output to 'Makefile'.
+
+- -h file - Prints program usage.
+- -g file - Generates a config file. If file is not specified it will default to .buildchain.
+- -o file - Spcify an onput file. If file is not specified it will default to 'Makefile'.
+- -i file - Spcify an input file. If file is not specified it will default to '.buildchain'.
 
 Example of `.buildchain` file
 ```text

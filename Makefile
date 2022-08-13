@@ -1,5 +1,5 @@
 CC := clang
-CFLAGS := -std=c17 -MP -MD -g -Wextra -pedantic
+CFLAGS := -std=c17 -MP -MD -g -Wall -Wextra -pedantic
 LFLAGS :=
 IFLAGS := -Isrc
 SRC := $(foreach dir,src,$(wildcard $(dir)/*.c) $(wildcard $(dir)/**/*.c) $(wildcard $(dir)/**/**/*.c))
@@ -18,4 +18,7 @@ obj/%.o: %.c
 clean:
 	rm -f $(OBJ) $(DEP) $(wildcard tests/test_*) bin/buildchain
 test_%: tests/%.c build
-	$(CC) $(CFLAGS) $(IFLAGS) $< -o tests/$@ $(LFLAGS)
+	$(CC) -g -Wall -Wextra -pedantic $(IFLAGS) $< -o tests/$@ $(LFLAGS)
+TESTS := $(addprefix test_,$(basename $(notdir $(wildcard tests/*.c))))
+test_all: $(TESTS)
+	$(foreach test,$(TESTS),./tests/$(test) && echo "" &&) cd .
